@@ -1,4 +1,5 @@
 from cam_tools.error import CamToolsError
+from cam_tools.utils import parse_dimension
 import cv2
 import glob
 import numpy as np
@@ -6,7 +7,7 @@ import pandas as pd
 from pathlib import Path
 
 WINDOW_NAME = "Label"
-WINDOW_HEIGHT = 480
+WINDOW_HEIGHT = 800
 
 
 def label(images_path, images_format, output_path, dimension):
@@ -36,15 +37,15 @@ def label(images_path, images_format, output_path, dimension):
     for image_path in image_paths:
         image = cv2.imread(image_path)
 
-        # Temporarily resize the image, so the window doesn't appear enormous.
-        height, width, _ = image.shape
-        scale = height / 480
-        small_image = cv2.resize(
-            image, (int(width / scale), int(height / scale)))
-
         if image is None:
             print(f"[WARN] Failed to load image at {image_path}.")
             continue
+
+        # Temporarily resize the image, so the window doesn't appear enormous.
+        height, width, _ = image.shape
+        scale = height / WINDOW_HEIGHT
+        small_image = cv2.resize(
+            image, (int(width / scale), int(height / scale)))
 
         # Collect the labelling.
         corners = display_and_label(small_image, dimension)
@@ -61,7 +62,7 @@ def label(images_path, images_format, output_path, dimension):
     # Write the labelling into a CSV.
     try:
         image_points = pd.DataFrame(np.array(image_points))
-        image_points.to_csv(str(images_path / output_path),
+        image_points.to_csv(str(output_path),
                             header=None, index=None)
     except FileNotFoundError as e:
         raise CamToolsError("could not write to output file")
@@ -96,20 +97,3 @@ def display_and_label(image, dimension):
         corners.append([x, y])
 
     return corners
-
-
-def parse_dimension(dimension):
-    """Parse the given dimension (e.g. 8x8) and returns a tuple (e.g. `(8, 8)`).
-    """
-
-    dimension = [comp.strip() for comp in dimension.split("x")]
-
-    if len(dimension) != 2:
-        raise CamToolsError("invalid dimension: expected exactly 2 components")
-
-    try:
-        dimension = list(map(int, dimension))
-    except ValueError as e:
-        raise CamToolsError("invalid dimension: expected integer components")
-
-    return (dimension[0], dimension[1])

@@ -3,6 +3,8 @@ import cv2
 import glob
 from pathlib import Path
 
+WINDOW_HEIGHT = 480
+
 
 def label(images_path, images_format, output_path, dimension):
     """Easy labelling of corners on the images in the directory.
@@ -18,23 +20,31 @@ def label(images_path, images_format, output_path, dimension):
     image_paths = glob.glob(
         str(Path(images_path) / Path(f"*.{images_format}")))
 
-    # Read in the images from the glob.
-    images = []
+    # Read and display each image from the glob, and collect the labelling.
     for image_path in image_paths:
         image = cv2.imread(image_path)
+
+        # Temporarily resize the image, so the window doesn't appear enormous.
+        height, width, _ = image.shape
+        scale = height / 480
+        small_image = cv2.resize(
+            image, (int(width / scale), int(height / scale)))
+
         if image is None:
             print(f"[WARN] Failed to load image at {image_path}.")
-        else:
-            images.append(image)
+            continue
 
-    # Display the images and get the labelling.
-    labels = [display_and_label(image) for image in images]
+        display_and_label(small_image, dimension)
 
     raise NotImplementedError()
 
 
-def display_and_label(image):
-    pass
+def display_and_label(image, dimension):
+    """Displays the given image in a window and collects the labelling.
+    """
+
+    cv2.imshow("Label", image)
+    cv2.waitKey(0)
 
 
 def parse_dimension(dimension):

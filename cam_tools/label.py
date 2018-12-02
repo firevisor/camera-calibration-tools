@@ -52,12 +52,12 @@ def label(images_path, images_format, output_path, dimension):
 
         if corners is None:
             continue
-        else:
-            # Scale the corners back up (the image was scaled down above).
-            corners = [[corner[0] * scale, corner[1] * scale]
-                       for corner in corners]
-            corners = np.array(corners).flatten()
-            image_points.append(corners)
+
+        # Scale the corners back up (the image was scaled down above).
+        corners = [[corner[0] * scale, corner[1] * scale]
+                   for corner in corners]
+        corners = np.array(corners).flatten()
+        image_points.append(corners)
 
     # Write the labelling into a CSV.
     try:

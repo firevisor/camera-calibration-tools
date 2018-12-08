@@ -8,6 +8,7 @@ from pathlib import Path
 
 WINDOW_NAME = "Label"
 WINDOW_HEIGHT = 800
+CIRCLE_RADIUS = 5
 
 
 def label(images_path, images_format, output_path, dimension):
@@ -88,27 +89,44 @@ def label_image(image, dimension):
     """
 
     # Stores the current state of the labelling.
-    clicks = []
+    corners = []
+    images = [image]
 
     # Display the image and collect clicks.
-    cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y,
-                         flags, param: clicks.append((event, x, y, flags, param)))
-    cv2.imshow(WINDOW_NAME, image)
-    cv2.waitKey(0)
+    while True:
+        cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags,
+                             param: handle_click(corners, images, event, x, y))
+        cv2.imshow(WINDOW_NAME, images[len(images) - 1])
+        cv2.waitKey(0)
 
-    # Keep only the left click events.
-    clicks = list(
-        filter(lambda click: click[0] == cv2.EVENT_LBUTTONDOWN, clicks))
-
-    # Check whether the clicks are valid.
-    if len(clicks) != dimension[0] * dimension[1]:
-        print("[WARN] Number of clicks does not match dimensions, ignoring this image")
-        return None
-
-    # Change all the events to points.
-    corners = []
-    for click in clicks:
-        _, x, y, _, _ = click
-        corners.append([x, y])
+        # Check whether there are enough corners.
+        if len(corners) == dimension[0] * dimension[1]:
+            break
 
     return corners
+
+
+def handle_click(corners, images, event, x, y):
+    """Handles a single click.
+
+    Draws a circle onto the current image, and saves the new image and the
+    corner into the given state (e.g. corners and images). Then, displays the
+    new image.
+    """
+
+    # Ignore non-click events.
+    if event != cv2.EVENT_LBUTTONDOWN:
+        return
+
+    # Get the current image.
+    cur_image = images[len(images) - 1]
+
+    # Draw a circle onto the current image.
+    new_image = cv2.circle(cur_image, (x, y), CIRCLE_RADIUS, (0, 255, 0))
+
+    # Append the new corners and image.
+    corners.append([x, y])
+    images.append(new_image)
+
+    # Display the new image.
+    cv2.imshow(WINDOW_NAME, new_image)

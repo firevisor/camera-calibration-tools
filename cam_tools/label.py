@@ -9,6 +9,8 @@ from pathlib import Path
 WINDOW_NAME = "Label"
 WINDOW_HEIGHT = 800
 CIRCLE_RADIUS = 5
+FONT_SCALE = 0.3
+FONT_COLOR = (0, 0, 255)
 
 
 def label(images_path, images_format, output_path, dimension):
@@ -93,8 +95,8 @@ def label_image(image, dimension):
     images = [image]
 
     # Bind the mouse callback to the current state (i.e. corners and images).
-    cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags,
-                         param: handle_click(corners, images, event, x, y))
+    cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags, param: handle_click(
+        corners, images, event, x, y, dimension))
 
     # Display the image and collect clicks.
     while True:
@@ -114,7 +116,7 @@ def label_image(image, dimension):
     return corners
 
 
-def handle_click(corners, images, event, x, y):
+def handle_click(corners, images, event, x, y, dimension):
     """Handles a single click.
 
     Draws a circle onto the current image, and saves the new image and the
@@ -126,12 +128,15 @@ def handle_click(corners, images, event, x, y):
     if event != cv2.EVENT_LBUTTONDOWN:
         return
 
-    # Get a copy of the current image.
-    cur_image = images[len(images) - 1].copy()
+    # Calculate current coordinates.
+    row = int(len(corners) % dimension[0])
+    col = len(corners) // dimension[0]
 
-    # Draw a circle onto the current image.
-    new_image = cv2.circle(cur_image, (x, y),
-                           CIRCLE_RADIUS, (0, 255, 0))
+    # Draw a circle and coordinates onto the current image.
+    new_image = images[len(images) - 1].copy()
+    new_image = cv2.circle(new_image, (x, y), CIRCLE_RADIUS, FONT_COLOR)
+    new_image = cv2.putText(
+        new_image, f"({row}, {col})", (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, FONT_SCALE, FONT_COLOR)
 
     # Append the new corners and image.
     corners.append([x, y])

@@ -92,12 +92,20 @@ def label_image(image, dimension):
     corners = []
     images = [image]
 
+    # Bind the mouse callback to the current state (i.e. corners and images).
+    cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags,
+                         param: handle_click(corners, images, event, x, y))
+
     # Display the image and collect clicks.
     while True:
-        cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags,
-                             param: handle_click(corners, images, event, x, y))
+        # Display the latest window.
         cv2.imshow(WINDOW_NAME, images[len(images) - 1])
-        cv2.waitKey(0)
+        key = cv2.waitKey(0)
+
+        # If "backspace" was pressed, remove one image (and corner).
+        if key == 8 and len(corners) > 0:
+            corners.pop()
+            images.pop()
 
         # Check whether there are enough corners.
         if len(corners) == dimension[0] * dimension[1]:
@@ -118,11 +126,12 @@ def handle_click(corners, images, event, x, y):
     if event != cv2.EVENT_LBUTTONDOWN:
         return
 
-    # Get the current image.
-    cur_image = images[len(images) - 1]
+    # Get a copy of the current image.
+    cur_image = images[len(images) - 1].copy()
 
     # Draw a circle onto the current image.
-    new_image = cv2.circle(cur_image, (x, y), CIRCLE_RADIUS, (0, 255, 0))
+    new_image = cv2.circle(cur_image, (x, y),
+                           CIRCLE_RADIUS, (0, 255, 0))
 
     # Append the new corners and image.
     corners.append([x, y])

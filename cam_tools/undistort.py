@@ -9,8 +9,15 @@ import pandas as pd
 from pathlib import Path
 
 
-def undistort(images_path, images_format, labels_path, output_path, dimension, retain_pixels):
-    """Reads the labels and undistorts the images based on them.
+def undistort(images_path, images_format, input_path, output_path, dimension, retain_pixels):
+    """Reads the corners and undistorts the images based on them.
+
+    The corners should have been created using the label tool. There should be
+    at least 10 sets of corners in order for the undistortion to be accurate.
+
+    When undistorting an image, the curved edges can either be trimmed off,
+    which would result in a loss of pixels, or retained, with black pixels
+    filling the gaps. This option is specified in the retain_pixels argument.
     """
 
     # Create the output directory if needed.
@@ -39,7 +46,7 @@ def undistort(images_path, images_format, labels_path, output_path, dimension, r
     # Read the CSV data into a `DataFrame`.
     image_points = None
     try:
-        image_points = pd.read_csv(labels_path, header=None)
+        image_points = pd.read_csv(input_path, header=None)
     except FileNotFoundError as e:
         raise CamToolsError("labels could not be found")
 
@@ -90,7 +97,8 @@ def undistort(images_path, images_format, labels_path, output_path, dimension, r
 
 
 def extract_image_points(image_points):
-    """Obtain a usable image points list from the raw data frame.
+    """Obtain a usable image points list from the raw data frame containing the
+    corners.
     """
 
     new_image_points = []

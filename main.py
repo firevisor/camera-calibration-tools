@@ -14,7 +14,7 @@ def main():
     label_parser.add_argument(
         "-f", "--format", help="The format of the images", default="jpg")
     label_parser.add_argument(
-        "-o", "--output", help="The output file (CSV format)", default="labels.csv")
+        "-o", "--output", help="The output file to contain the corners", default="corners.csv")
     label_parser.add_argument(
         "-d", "--dimension", help="The dimension of the board", default="8x8")
 
@@ -25,7 +25,7 @@ def main():
     undistort_parser.add_argument(
         "-f", "--format", help="The format of the images", default="jpg")
     undistort_parser.add_argument(
-        "-l", "--labels", help="The file containing the labels", default="labels.csv")
+        "-i", "--input", help="The input file containing the corners", default="corners.csv")
     undistort_parser.add_argument(
         "-o", "--output", help="The directory for the undistorted images", default="images_undistorted")
     undistort_parser.add_argument(
@@ -39,7 +39,7 @@ def main():
         if args.command == "label":
             label(args.path, args.format, args.output, args.dimension)
         elif args.command == "undistort":
-            undistort(args.path, args.format, args.labels,
+            undistort(args.path, args.format, args.input,
                       args.output, args.dimension, args.retain)
     except CamToolsError as e:
         print(f'error: {e}')

@@ -1,15 +1,24 @@
 from cam_tools.error import CamToolsError
 from cam_tools.utils import parse_dimension
 import cv2
+import errno
 import glob
 import numpy as np
+import os
 import pandas as pd
 from pathlib import Path
 
 
-def undistort(images_path, images_format, labels_path, suffix, dimension, retain_pixels):
+def undistort(images_path, images_format, labels_path, output_path, dimension, retain_pixels):
     """Reads the labels and undistorts the images based on them.
     """
+
+    # Create the output directory if needed.
+    output_path = Path(output_path)
+    try:
+        os.makedirs(str(output_path))
+    except OSError:
+        pass
 
     # Extract the dimension of the board.
     dimension = parse_dimension(dimension)
@@ -77,12 +86,11 @@ def undistort(images_path, images_format, labels_path, suffix, dimension, retain
         undist_image = cv2.undistort(image, mtx, dist, None, undist_mtx)
 
         # Write the undistorted image.
-        cv2.imwrite(str(derive_undist_image_path(
-            image_path, suffix)), undist_image)
+        cv2.imwrite(str(output_path / Path(image_path).name), undist_image)
 
 
 def extract_image_points(image_points):
-    """Obtain a usable image points from the raw data frame.
+    """Obtain a usable image points list from the raw data frame.
     """
 
     new_image_points = []
@@ -95,11 +103,3 @@ def extract_image_points(image_points):
         new_image_points.append(single_image_points)
 
     return np.array(new_image_points).astype('float32')
-
-
-def derive_undist_image_path(image_path, suffix):
-    """Adds the suffix behind the path of the undistorted image.
-    """
-
-    image_path = Path(image_path)
-    return Path(image_path.parent) / Path(str(image_path.stem + suffix + image_path.suffix))

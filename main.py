@@ -27,7 +27,7 @@ def main():
     undistort_parser.add_argument(
         "-l", "--labels", help="The file containing the labels", default="labels.csv")
     undistort_parser.add_argument(
-        "-s", "--suffix", help="The suffix for the undistorted images", default="_undistorted")
+        "-o", "--output", help="The directory for the undistorted images", default="images_undistorted")
     undistort_parser.add_argument(
         "-d", "--dimension", help="The dimension of the board", default="8x8")
     undistort_parser.add_argument(
@@ -40,7 +40,7 @@ def main():
             label(args.path, args.format, args.output, args.dimension)
         elif args.command == "undistort":
             undistort(args.path, args.format, args.labels,
-                      args.suffix, args.dimension, args.retain)
+                      args.output, args.dimension, args.retain)
     except CamToolsError as e:
         print(f'error: {e}')
         exit(1)

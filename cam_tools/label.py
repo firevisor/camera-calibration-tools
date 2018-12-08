@@ -11,10 +11,19 @@ WINDOW_HEIGHT = 800
 
 
 def label(images_path, images_format, output_path, dimension):
-    """Easy labelling of corners on the images in the directory.
+    """Provides easy labelling of corners on the images in the directory through
+    an OpenCV GUI.
 
-    Displays the images in the directory one at a time and writes the labelling
-    results into a CSV file at the given output path.
+    Displays the images from the directory one at a time. Click the corners from
+    left-to-right and top-to-bottom, and then press any key to go to the next
+    image.
+
+    When the image is clicked wrongly, press "backspace" to go back one corner.
+    If an image is not fully labelled before a key is pressed, the image will be
+    ignored.
+
+    Once completed, the corners will be written into a CSV file at the given
+    output path, which can then be used to undistort the image.
     """
 
     cv2.namedWindow(WINDOW_NAME)
@@ -33,10 +42,11 @@ def label(images_path, images_format, output_path, dimension):
     # Store the image points/corners here, to write into the CSV file later.
     image_points = []
 
-    # Read and display each image from the glob, and collect the labelling.
+    # Read and display each image from the glob, and collect the corners.
     for image_path in image_paths:
         image = cv2.imread(image_path)
 
+        # Ignore images that fail to load.
         if image is None:
             print(f"[WARN] Failed to load image at {image_path}.")
             continue
@@ -47,11 +57,8 @@ def label(images_path, images_format, output_path, dimension):
         small_image = cv2.resize(
             image, (int(width / scale), int(height / scale)))
 
-        # Collect the labelling.
-        corners = display_and_label(small_image, dimension)
-
-        if corners is None:
-            continue
+        # Collect the corners.
+        corners = label_image(small_image, dimension)
 
         # Scale the corners back up (the image was scaled down above).
         corners = [[corner[0] * scale, corner[1] * scale]
@@ -59,7 +66,7 @@ def label(images_path, images_format, output_path, dimension):
         corners = np.array(corners).flatten()
         image_points.append(corners)
 
-    # Write the labelling into a CSV.
+    # Write the corners into a CSV.
     try:
         image_points = pd.DataFrame(np.array(image_points))
         image_points.to_csv(str(output_path),
@@ -68,11 +75,19 @@ def label(images_path, images_format, output_path, dimension):
         raise CamToolsError("could not write to output file")
 
 
-def display_and_label(image, dimension):
-    """Displays the given image in a window and collects the labelling.
+def label_image(image, dimension):
+    """Displays the given image in a window for labelling and collects the
+    resulting corners.
+
+    Each time a click occurs, the click is saved and a circle is drawn onto the
+    image (the previous image is saved) for feedback. The new image is then
+    shown on the window.
+
+    Each time "backspace" is pressed, the current image and click is discarded
+    and the previous image is shown on the window.
     """
 
-    # Stores the click events for further processing.
+    # Stores the current state of the labelling.
     clicks = []
 
     # Display the image and collect clicks.

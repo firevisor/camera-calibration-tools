@@ -8,7 +8,7 @@ def main():
         help="Various tools", dest="command")
 
     label_parser = subparsers.add_parser(
-        "label", help="Easy corner labelling")
+        "label", help="Easy labelling of corners")
     label_parser.add_argument(
         "-p", "--path", help="The directory of images to label", default="images")
     label_parser.add_argument(

@@ -98,20 +98,16 @@ def label_image(image, dimension):
     cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags, param: handle_click(
         corners, images, event, x, y, dimension))
 
-    # Display the image and collect clicks.
-    while True:
+    # Display the image and collect clicks until there are enough corners.
+    while len(corners) != dimension[0] * dimension[1]:
         # Display the latest window.
-        cv2.imshow(WINDOW_NAME, images[len(images) - 1])
+        cv2.imshow(WINDOW_NAME, images[-1])
         key = cv2.waitKey(0)
 
         # If "backspace" was pressed, remove one image (and corner).
         if key == 8 and len(corners) > 0:
             corners.pop()
             images.pop()
-
-        # Check whether there are enough corners.
-        if len(corners) == dimension[0] * dimension[1]:
-            break
 
     return corners
 

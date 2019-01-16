@@ -22,10 +22,7 @@ def undistort(images_path, images_format, input_path, output_path, dimension, re
 
     # Create the output directory if needed.
     output_path = Path(output_path)
-    try:
-        os.makedirs(str(output_path))
-    except OSError:
-        pass
+    output_path.mkdir(parents=True, exist_ok=True)
 
     # Extract the dimension of the board.
     dimension = parse_dimension(dimension)

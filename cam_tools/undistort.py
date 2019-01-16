@@ -66,11 +66,12 @@ def undistort(images_path, images_format, input_path, output_path, dimension, re
     if not ret:
         raise CamToolsError("failed to caculate the camera calibration")
 
-    # Turn `retain pixels` into an integer.
+    # Turn `retain_pixels` into an integer.
+    retain_pixels_int = None
     if retain_pixels:
-        retain_pixels = 1
+        retain_pixels_int = 1
     else:
-        retain_pixels = 0
+        retain_pixels_int = 0
 
     # Read and undistort each image from the glob.
     for image_path in image_paths:
@@ -82,9 +83,9 @@ def undistort(images_path, images_format, input_path, output_path, dimension, re
 
         h, w, _ = image.shape
 
-        # Recalculate the matrix based on `retain_pixels`.
+        # Recalculate the matrix based on `retain_pixels_int`.
         undist_mtx, _ = cv2.getOptimalNewCameraMatrix(
-            mtx, dist, (w, h), retain_pixels, (w, h))
+            mtx, dist, (w, h), retain_pixels_int, (w, h))
 
         # Undistort the image.
         undist_image = cv2.undistort(image, mtx, dist, None, undist_mtx)

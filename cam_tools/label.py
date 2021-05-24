@@ -7,9 +7,9 @@ import pandas as pd
 from pathlib import Path
 
 WINDOW_NAME = "Label"
-WINDOW_HEIGHT = 800
-CIRCLE_RADIUS = 5
-FONT_SCALE = 0.3
+WINDOW_HEIGHT = 1200
+CIRCLE_RADIUS = 10
+FONT_SCALE = 0.6
 FONT_COLOR = (0, 0, 255)
 
 
@@ -71,9 +71,12 @@ def label(images_path, images_format, output_path, dimension):
 
     # Write the corners into a CSV.
     try:
-        image_points = pd.DataFrame(np.array(image_points))
-        image_points.to_csv(str(output_path),
-                            header=None, index=None)
+        f = open(str(output_path), "a")
+        for img_pts in image_points:
+            line = str(list(img_pts))[1:-1]  # Convert the list to string and remove [ and ]
+            f.write(line)
+            f.write("\n")
+        f.close()
     except FileNotFoundError as e:
         raise CamToolsError("could not write to output file")
 
@@ -96,23 +99,24 @@ def label_image(image, dimension):
 
     # Bind the mouse callback to the current state (i.e. corners and images).
     cv2.setMouseCallback(WINDOW_NAME, lambda event, x, y, flags, param: handle_click(
-        corners, images, event, x, y, dimension))
+        corners, images, event, x, y, flags, dimension))
 
     # Display the image and collect clicks until there are enough corners.
-    while len(corners) != dimension[0] * dimension[1]:
+    while True:
         # Display the latest window.
+        print(corners)
         cv2.imshow(WINDOW_NAME, images[-1])
         key = cv2.waitKey(0)
-
+        if key == 32:
+            break
         # If "backspace" was pressed, remove one image (and corner).
         if key == 8 and len(corners) > 0:
             corners.pop()
             images.pop()
-
     return corners
 
 
-def handle_click(corners, images, event, x, y, dimension):
+def handle_click(corners, images, event, x, y, flags, dimension):
     """Handles a single click.
 
     Draws a circle onto the current image, and saves the new image and the
@@ -121,9 +125,9 @@ def handle_click(corners, images, event, x, y, dimension):
     """
 
     # Ignore non-click events.
+    print(event)
     if event != cv2.EVENT_LBUTTONDOWN:
         return
-
     # Calculate current coordinates.
     row = int(len(corners) % dimension[0])
     col = len(corners) // dimension[0]
@@ -134,7 +138,6 @@ def handle_click(corners, images, event, x, y, dimension):
     new_image = cv2.putText(
         new_image, f"({row}, {col})", (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, FONT_SCALE, FONT_COLOR)
 
-    # Append the new corners and image.
     corners.append([x, y])
     images.append(new_image)
 

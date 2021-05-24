@@ -12,7 +12,7 @@ The process of marking the cell corners if very labor-intensive. For example, yo
 * `<dimension_of_module>`: If the module is 72 cells (12 cols, 6 rows), the dimension that has to be provided is "13x7".
 Specify the dimension in "`<col+1>`x`<row+1>`" format.
 
-Click corners of every cell and once you are done with the module image, press <Spacebar>.
+Click corners of every cell and once you are done with the module image, press `<Spacebar>`.
 
 ## Workflow
 

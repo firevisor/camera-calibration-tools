@@ -2,7 +2,7 @@ altgraph==0.16.1
 autopep8==1.4.3
 future==0.17.1
 macholib==1.11
-numpy==1.15.4
+numpy==1.22.0
 opencv-python==3.4.4.19
 pandas==0.23.4
 pefile==2018.8.8
